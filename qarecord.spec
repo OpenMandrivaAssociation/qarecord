@@ -1,6 +1,6 @@
 %define name	qarecord
 %define version	0.5.0
-%define release %mkrel 1
+%define release %mkrel 2
 
 Name: 	 	%{name}
 Summary: 	QT based ALSA recording interface
@@ -32,13 +32,15 @@ buffer overruns are avoided. QARecord can also be used as JACK client.
 rm -rf $RPM_BUILD_ROOT
 %makeinstall_std
 
+install -D -m 0644 src/pixmaps/qarecord_48.xpm %{buildroot}%{_datadir}/pixmaps/%name.xpm
+
 mkdir -p %{buildroot}%{_datadir}/applications
 cat > %{buildroot}%{_datadir}/applications/mandriva-%{name}.desktop << EOF
 [Desktop Entry]
 Name=QARecord
 Comment=ALSA recording GUI
 Exec=%{_bindir}/%{name}
-Icon=sound_section
+Icon=qarecord
 Terminal=false
 Type=Application
 Categories=AudioVideo;Audio;Recorder;
@@ -64,4 +66,5 @@ rm -rf $RPM_BUILD_ROOT
 %lang(fr) %{_mandir}/fr/man1/*
 %lang(de) %{_mandir}/de/man1/*
 %{_datadir}/%name
+%{_datadir}/pixmaps/*.xpm
 %{_datadir}/applications/mandriva-%{name}.desktop
