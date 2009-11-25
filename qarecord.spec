@@ -1,18 +1,19 @@
 %define name	qarecord
-%define version	0.0.9b
-%define release %mkrel 7
+%define version	0.5.0
+%define release %mkrel 1
 
 Name: 	 	%{name}
 Summary: 	QT based ALSA recording interface
 Version: 	%{version}
 Release: 	%{release}
 
-Source:		%{name}-%{version}.tar.bz2
-URL:		http://www.suse.de/~mana/kalsatools.html
-License:	GPL
+Source:		http://sourceforge.net/projects/alsamodular/files/QARecord/%version/%{name}-%{version}.tar.bz2
+Patch0:		qarecord-0.5.0-fix-str-fmt.patch
+URL:		http://alsamodular.sourceforge.net/
+License:	GPLv2+
 Group:		Sound
 BuildRoot:	%{_tmppath}/%{name}-buildroot
-BuildRequires:	qt3-devel alsa-lib-devel jackit-devel
+BuildRequires:	qt4-devel alsa-lib-devel jackit-devel
 
 %description
 QARecord is a simple multithreaded stereo recording tool. It can record both
@@ -21,18 +22,15 @@ buffer overruns are avoided. QARecord can also be used as JACK client.
 
 %prep
 %setup -q
-perl -p -i -e "s|-O2|$RPM_OPT_FLAGS||g" make_qarecord
-perl -p -i -e "s/\(QT_BASE_DIR\)\/lib/\(QT_BASE_DIR\)\/%_lib/g" make_qarecord
+%patch0 -p0
 
 %build
-%make -f make_qarecord
+%configure2_5x
+%make
 										
 %install
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/%_bindir
-cp %name $RPM_BUILD_ROOT/%_bindir
-
-#menu
+%makeinstall_std
 
 mkdir -p %{buildroot}%{_datadir}/applications
 cat > %{buildroot}%{_datadir}/applications/mandriva-%{name}.desktop << EOF
@@ -43,10 +41,8 @@ Exec=%{_bindir}/%{name}
 Icon=sound_section
 Terminal=false
 Type=Application
-Categories=X-MandrivaLinux-Multimedia-Sound;AudioVideo;Audio;Recorder;
-Encoding=UTF-8
+Categories=AudioVideo;Audio;Recorder;
 EOF
-
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -63,7 +59,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc LICENSE
 %{_bindir}/%name
+%{_mandir}/man1/*
+%lang(fr) %{_mandir}/fr/man1/*
+%lang(de) %{_mandir}/de/man1/*
+%{_datadir}/%name
 %{_datadir}/applications/mandriva-%{name}.desktop
-
