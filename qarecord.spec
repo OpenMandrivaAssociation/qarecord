@@ -1,19 +1,18 @@
-%define name	qarecord
-%define version	0.5.0
-%define release %mkrel 2
+%define name    qarecord
+%define version 0.5.0
+%define release %mkrel 3
 
-Name: 	 	%{name}
-Summary: 	QT based ALSA recording interface
-Version: 	%{version}
-Release: 	%{release}
+Name:           %{name} 
+Summary:        QT based ALSA recording interface
+Version:        %{version} 
+Release:        %{release}
 
-Source:		http://sourceforge.net/projects/alsamodular/files/QARecord/%version/%{name}-%{version}.tar.bz2
-Patch0:		qarecord-0.5.0-fix-str-fmt.patch
-URL:		http://alsamodular.sourceforge.net/
-License:	GPLv2+
-Group:		Sound
-BuildRoot:	%{_tmppath}/%{name}-buildroot
-BuildRequires:	qt4-devel alsa-lib-devel jackit-devel
+Source:         http://dl.sf.net/alsamodular/%{name}-%{version}.tar.bz2
+Patch0:         qarecord-0.5.0-upstream1.patch
+URL:            http://alsamodular.sourceforge.net/
+License:        GPLv2
+Group:          Sound
+BuildRequires:  qt4-devel alsa-lib-devel jackit-devel
 
 %description
 QARecord is a simple multithreaded stereo recording tool. It can record both
@@ -22,17 +21,21 @@ buffer overruns are avoided. QARecord can also be used as JACK client.
 
 %prep
 %setup -q
-%patch0 -p0
+%patch0 -p1
+%if %mdkversion >= 201000
+iconv -f=latin1 -t=utf8 man/de/%{name}.1 -o man/de/%{name}.1
+iconv -f=latin1 -t=utf8 man/fr/%{name}.1 -o man/fr/%{name}.1
+%endif
 
 %build
 %configure2_5x
 %make
-										
+                                        
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 %makeinstall_std
 
-install -D -m 0644 src/pixmaps/qarecord_48.xpm %{buildroot}%{_datadir}/pixmaps/%name.xpm
+install -D -m 0644 src/pixmaps/%{name}_48.xpm %{buildroot}%{_datadir}/pixmaps/%name.xpm
 
 mkdir -p %{buildroot}%{_datadir}/applications
 cat > %{buildroot}%{_datadir}/applications/mandriva-%{name}.desktop << EOF
@@ -40,20 +43,19 @@ cat > %{buildroot}%{_datadir}/applications/mandriva-%{name}.desktop << EOF
 Name=QARecord
 Comment=ALSA recording GUI
 Exec=%{_bindir}/%{name}
-Icon=qarecord
+Icon=%{name}
 Terminal=false
 Type=Application
-Categories=AudioVideo;Audio;Recorder;
+Categories=X-MandrivaLinux-Multimedia-Sound;AudioVideo;Audio;Recorder;
 EOF
 
 %clean
-rm -rf $RPM_BUILD_ROOT
 
 %if %mdkversion < 200900
 %post
 %update_menus
 %endif
-		
+        
 %if %mdkversion < 200900
 %postun
 %clean_menus
@@ -61,10 +63,13 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%{_bindir}/%name
+%doc README NEWS COPYING AUTHORS 
+%{_bindir}/%{name}
+%{_datadir}/%{name}
+%{_datadir}/pixmaps/%{name}.xpm
 %{_mandir}/man1/*
-%lang(fr) %{_mandir}/fr/man1/*
-%lang(de) %{_mandir}/de/man1/*
-%{_datadir}/%name
-%{_datadir}/pixmaps/*.xpm
+%{_mandir}/de/man1/*
+%{_mandir}/fr/man1/*
 %{_datadir}/applications/mandriva-%{name}.desktop
+
+%changelog
