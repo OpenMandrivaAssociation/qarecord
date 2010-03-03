@@ -1,6 +1,6 @@
 %define name    qarecord
 %define version 0.5.0
-%define release %mkrel 3
+%define release %mkrel 4
 
 Name:           %{name} 
 Summary:        QT based ALSA recording interface
@@ -68,8 +68,8 @@ EOF
 %{_datadir}/%{name}
 %{_datadir}/pixmaps/%{name}.xpm
 %{_mandir}/man1/*
-%{_mandir}/de/man1/*
-%{_mandir}/fr/man1/*
+%lang(de) %{_mandir}/de/man1/*
+%lang(fr) %{_mandir}/fr/man1/*
 %{_datadir}/applications/mandriva-%{name}.desktop
 
 %changelog
