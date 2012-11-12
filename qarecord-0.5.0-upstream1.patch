@@ -1,0 +1,116 @@
+--- qarecord-0.5.0.orig/src/settings.cpp    2009-08-31 13:36:34.000000000 +0200
++++ qarecord-0.5.0/src/settings.cpp 2009-08-31 13:36:57.000000000 +0200
+@@ -127,7 +127,7 @@
+                 midiNote = atoi(optarg);
+                 break;
+             case 'v':
+-                printf(ABOUTMSG);
++                printf("%s", ABOUTMSG);
+                 return 0;
+             case 'h':
+                 SettingsData def;
+--- qarecord-0.5.0.orig/src/translations/qarecord_sv.ts 2009-08-31 13:25:33.000000000 +0200
++++ qarecord-0.5.0/src/translations/qarecord_sv.ts  2009-08-31 13:27:07.000000000 +0200
+@@ -110,7 +110,7 @@
+     <message>
+         <location filename="../mainwindow.cpp" line="145"/>
+         <source>Current:</source>
+-        <translation>Str√∂m:</translation>
++        <translation>Nu:</translation>
+     </message>
+     <message>
+         <location filename="../mainwindow.cpp" line="357"/>
+--- qarecord-0.5.0.orig/man/fr/qarecord.1   2009-08-31 13:44:52.000000000 +0200
++++ qarecord-0.5.0/man/fr/qarecord.1    2009-08-31 13:47:29.000000000 +0200
+@@ -103,7 +103,7 @@
+ .B \-\-midiChannel \fIcanal\fP
+ SpÈcifie le canal MIDI utilisÈ pour le contrÙle de 
+ .B qarecord
+-. La valeur par dÈfaut est 16, le valide domaine des valeurs est 1..16.
++allant de 1 ‡ 16. La valeur par dÈfaut est 16.
+ .TP
+ .B \-\-midiNote \fInombre\fP
+ SpÈcifie les notes utilisÈes pour le contrÙle MIDI. 
+--- qarecord-0.5.0.orig/src/mainwindow.cpp  2009-08-31 13:56:21.000000000 +0200
++++ qarecord-0.5.0/src/mainwindow.cpp   2009-08-31 19:40:26.000000000 +0200
+@@ -383,7 +383,7 @@
+     do {
+         snd_seq_event_input(seq_handle, &ev);
+         if ((ev->type == SND_SEQ_EVENT_NOTEON) && 
+-            (ev->data.control.channel == settings->getMidiChannel())) {
++            (ev->data.control.channel == (settings->getMidiChannel()-1))) {
+ 
+             switch (ev->data.note.note - settings->getMidiNote()) {
+                 case 0: 
+--- qarecord-0.5.0.orig/src/settings.cpp    2009-08-31 19:40:26.000000000 +0200
++++ qarecord-0.5.0/src/settings.cpp 2009-08-31 19:44:19.000000000 +0200
+@@ -54,7 +54,7 @@
+                 (int) ringBufSize);
+     }
+ 
+-    midiChannel = checkRange("midiChannel", midiChannel, 0, 15);
++    midiChannel = checkRange("midiChannel", midiChannel, 1, 16);
+     midiNote = checkRange("midiNote", midiNote, 0, 127);
+     meterrange = checkRange("meterrange", meterrange, 12, 192);
+     splitMB = checkRange("split", splitMB, 1, 4095);
+@@ -68,7 +68,7 @@
+     ringBufSize = 1048576;
+     enableJack = false;
+     enable32bit = false;
+-    midiChannel = 15;
++    midiChannel = 16;
+     midiNote = 21;
+     channels = 2;
+     meterrange = 85;
+@@ -109,7 +109,6 @@
+                 break;
+             case 'm':
+                 midiChannel = atoi(optarg);
+-                midiChannel--;
+                 break;
+             case 's':
+                 splitMB = atoi(optarg);
+@@ -137,7 +136,7 @@
+                 printf("--buffersize <bytes>        Size of ringbuffer [%ld]\n",
+                     def.ringBufSize);
+                 printf("--channels <num>            Channels [%d]\n",
+-                        def.channels + 1);
++                        def.channels);
+                 printf("--jack                      Enable JACK mode\n");
+                 printf("--meterrange <dB>           Dynamic range of peak meter [%d]\n",
+                     def.meterrange);
+--- qarecord-0.5.0.orig/src/diskwrite.cpp   2009-09-04 00:54:40.000000000 +0200
++++ qarecord-0.5.0/src/diskwrite.cpp    2009-09-04 00:55:09.000000000 +0200
+@@ -129,7 +129,7 @@
+             count -= count % framesize;
+         }
+ 
+-        if (wavfile && (fwrite(&ringBuf[startpos], count, 1, wavfile) != 1)) {
++        if (wavfile && (count > 0) && (fwrite(&ringBuf[startpos], count, 1, wavfile) != 1)) {
+             qWarning("File write error");
+         }
+         currentDataSize += count;
+--- a/src/ringbuffer.cpp
++++ b/src/ringbuffer.cpp
+@@ -205,5 +205,6 @@
+ #else
+     readOfs += q_atomic_set_int(&fillRate, 0);
+ #endif
++    readOfs %= ringBufSize;
+ }
+ 
+--- a/src/jackcapture.orig	2010-03-03 15:47:13.653621325 +0100
++++ a/src/jackcapture.cpp	2010-03-03 15:47:46.077900039 +0100
+@@ -42,11 +42,11 @@
+  
+ int JackCapture::activateJack(RingBuffer* buf) 
+ {
++    ringBuffer = buf;
+     jackRunning = true;
+     if (jack_activate(jack_handle)) {
+         qWarning("cannot activate client");
+     }
+-    ringBuffer = buf;
+     ringBuffer->reset();
+     return(0);
+ }
