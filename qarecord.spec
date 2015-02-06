@@ -1,6 +1,6 @@
 %define name    qarecord
 %define version 0.5.0
-%define release %mkrel 5
+%define release 6
 
 Name:           %{name} 
 Summary:        QT based ALSA recording interface
