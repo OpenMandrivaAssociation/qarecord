@@ -12,6 +12,11 @@ Patch0:         qarecord-0.5.0-upstream1.patch
 URL:            https://alsamodular.sourceforge.net/
 License:        GPLv2
 Group:          Sound
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:  qt4-devel alsa-oss-devel
 BuildRequires:	pkgconfig(jack)
 
